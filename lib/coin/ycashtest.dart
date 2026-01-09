@@ -1,15 +1,26 @@
+import 'package:flutter/material.dart';
+
 import "coin.dart";
 
-class Coin {
-  String app = "YWalletTest";
+class YcashTestCoin extends CoinBase {
+  int coin = 3;
+  String name = "Ycash Test";
+  String app = "YWallet (playground)";
   String symbol = "\u24E8";
   String currency = "ycash";
+  int coinIndex = 1; // Testnet is often 1
   String ticker = "YEC";
-  String explorerUrl = "https://yecblockexplorer.com/tx/";
+  String dbName = "yec-test.db";
+  String? marketTicker;
+  AssetImage image = AssetImage('assets/ycash.png');
   List<LWInstance> lwd = [
     LWInstance("Lightwalletd", "https://testlite.ycash.xyz:9067"),
   ];
+  int defaultAddrMode = 2;
+  int defaultUAType = 2;
   bool supportsUA = false;
   bool supportsMultisig = true;
-  List<int> weights = [5, 25, 250];
+  bool supportsLedger = false;
+  List<double> weights = [5, 25, 250];
+  List<String> blockExplorers = ["https://yecblockexplorer.com/tx/"];
 }
