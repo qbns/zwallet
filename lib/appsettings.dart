@@ -75,7 +75,7 @@ extension CoinSettingsExtension on CoinSettings {
   String resolveBlockExplorer(int coin) {
     final explorers = coins[coin].blockExplorers;
     int idx = explorer.index;
-    if (idx >= 0) return explorers[idx];
+    if (idx >= 0 && idx < explorers.length) return explorers[idx];
     return explorer.customURL;
   }
 }

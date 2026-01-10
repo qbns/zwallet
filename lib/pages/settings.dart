@@ -609,12 +609,14 @@ class _CoinState extends State<CoinTab> with AutomaticKeepAliveClientMixin {
   void ping() {
     final coinDef = coins[widget.coin];
     for (var i = 0; i < pings.length; i++) {
-      final server = coinDef.lwd[i].url;
-      Future(() async {
-        final ping = await WarpApi.ping(server);
-        pings[i] = ping;
-        setState(() {});
-      });
+      if (i < coinDef.lwd.length) {
+        final server = coinDef.lwd[i].url;
+        Future(() async {
+          final ping = await WarpApi.ping(server);
+          pings[i] = ping;
+          setState(() {});
+        });
+      }
     }
   }
 
@@ -868,7 +870,5 @@ Future<List<String>?> fetchCurrencies() async {
 String resolveURL(CoinBase c, CoinSettings settings) {
   if (settings.lwd.index >= 0 && settings.lwd.index < c.lwd.length)
     return c.lwd[settings.lwd.index].url;
-  else {
-    return settings.lwd.customURL;
-  }
+  return settings.lwd.customURL;
 }
