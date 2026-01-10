@@ -64,7 +64,7 @@ class ActiveAccount2 extends _ActiveAccount2 with _$ActiveAccount2 {
     final backup = WarpApi.getBackup(coin, id);
     final canPay = backup.sk != null;
     return ActiveAccount2(
-        coin, id, backup.name!, backup.seed, canPay, false, backup.saved);
+        coin, id, backup.name ?? 'Unknown', backup.seed, canPay, false, backup.saved);
   }
 
   bool get hasUA => coins[coin].supportsUA;

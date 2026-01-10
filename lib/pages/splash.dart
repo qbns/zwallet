@@ -118,31 +118,41 @@ class _SplashState extends State<SplashPage> {
   }
 
   void _initWallets() {
-    for (var c in coins) {
-      final coin = c.coin;
-      _setProgress(0.5 + 0.1 * coin, 'Initializing ${c.ticker}');
-      WarpApi.setDbPasswd(coin, appStore.dbPassword);
-      WarpApi.initWallet(coin, c.dbFullPath);
-      final p = WarpApi.getProperty(coin, 'settings');
-      final settings = p.isNotEmpty
-          ? CoinSettings.fromBuffer(base64Decode(p))
-          : CoinSettings();
-      final url = resolveURL(c, settings);
-      WarpApi.updateLWD(coin, url);
+    final allCoins = coins;
+    for (var i = 0; i < allCoins.length; i++) {
+      final c = allCoins[i];
       try {
-        WarpApi.migrateData(c.coin);
-      } catch (_) {} // do not fail on network exception
+        _setProgress(0.4 + 0.4 * i / allCoins.length, 'Initializing ${c.ticker}');
+        final coin = c.coin;
+        WarpApi.setDbPasswd(coin, appStore.dbPassword);
+        WarpApi.initWallet(coin, c.dbFullPath);
+        final p = WarpApi.getProperty(coin, 'settings');
+        final settings = p.isNotEmpty
+            ? CoinSettings.fromBuffer(base64Decode(p))
+            : CoinSettings();
+        final url = resolveURL(c, settings);
+        WarpApi.updateLWD(coin, url);
+        try {
+          WarpApi.migrateData(c.coin);
+        } catch (_) {} // do not fail on network exception
+      } catch (e) {
+        logger.e('Failed to initialize ${c.ticker}: $e');
+      }
     }
   }
 
   Future<void> _restoreActive() async {
-    _setProgress(0.8, 'Load Active Account');
-    final prefs = await SharedPreferences.getInstance();
-    final a = ActiveAccount2.fromPrefs(prefs);
-    a?.let((a) {
-      setActiveAccount(a.coin, a.id);
-      aa.update(syncStatus2.latestHeight);
-    });
+    _setProgress(0.9, 'Load Active Account');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final a = ActiveAccount2.fromPrefs(prefs);
+      if (a != null && a != nullAccount) {
+        setActiveAccount(a.coin, a.id);
+        aa.update(syncStatus2.latestHeight);
+      }
+    } catch (e) {
+      logger.e('Failed to restore active account: $e');
+    }
   }
 
   _initAccel() {
@@ -151,7 +161,10 @@ class _SplashState extends State<SplashPage> {
 
   void _setProgress(double progress, String message) {
     print("$progress $message");
-    progressKey.currentState!.setValue(progress, message);
+    final state = progressKey.currentState;
+    if (state != null) {
+      state.setValue(progress.clamp(0.0, 1.0), message);
+    }
   }
 
   _initBackgroundSync() {
@@ -210,10 +223,12 @@ class _LoadProgressState extends State<LoadProgress> {
   }
 
   void setValue(double v, String message) {
-    setState(() {
-      _value = v;
-      _message = message;
-    });
+    if (mounted) {
+      setState(() {
+        _value = v;
+        _message = message;
+      });
+    }
   }
 }
 
